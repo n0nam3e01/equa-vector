@@ -1,4 +1,5 @@
 import { questions, getDirections } from './quiz.mjs';
+import './faq.mjs';
 const registrationUrl = 'https://ventorme.ai/register?utm_source=hacknext&utm_campaign=team-158';
 const content = document.querySelector('#quiz-content');
 const back = document.querySelector('#quiz-back');
@@ -8,13 +9,32 @@ const fill = document.querySelector('#progress-fill');
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 let answers = [];
 let currentAnimation;
+let changingQuestion = false;
 const symbols = ['⌘','✳','♡','↗'];
+async function changeQuestion(change) {
+  if (changingQuestion) return;
+  changingQuestion = true;
+  content.inert = true;
+  currentAnimation?.cancel();
+  try {
+    if (!reduce.matches) {
+      currentAnimation = content.animate([{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-5px)'}],{duration:120,easing:'ease-out'});
+      await currentAnimation.finished.catch(() => {});
+    }
+    change();
+    content.inert = false;
+    render(true);
+  } finally {
+    content.inert = false;
+    changingQuestion = false;
+  }
+}
 function render(focus = false) {
   const done = answers.length === questions.length;
   currentAnimation?.cancel();
   step.textContent = done ? 'Готово ✓' : `${answers.length + 1} / ${questions.length}`;
   progress.setAttribute('aria-valuenow', String(answers.length));
-  fill.style.transform = `scaleX(${answers.length / questions.length})`;
+  fill.style.clipPath = `inset(0 ${100 - answers.length / questions.length * 100}% 0 0 round 4px)`;
   back.hidden = answers.length === 0;
   content.replaceChildren();
   const heading = document.createElement('h2');
@@ -40,7 +60,7 @@ function render(focus = false) {
     restart.type = 'button';
     restart.className = 'restart';
     restart.textContent = 'Пройти ещё раз';
-    restart.addEventListener('click', () => { answers = []; render(true); });
+    restart.addEventListener('click', () => changeQuestion(() => { answers = []; }));
     content.append(examples,next,link,restart);
   } else {
     const question = questions[answers.length];
@@ -56,7 +76,7 @@ function render(focus = false) {
       icon.className = 'choice-icon'; icon.setAttribute('aria-hidden','true'); icon.textContent = symbols[index];
       const label = document.createElement('span'); label.textContent = answer;
       button.append(icon,label);
-      button.addEventListener('click', () => { answers.push(index); render(true); });
+      button.addEventListener('click', () => changeQuestion(() => { answers.push(index); }));
       choices.append(button);
     });
     content.append(choices);
@@ -64,7 +84,7 @@ function render(focus = false) {
   if (focus) heading.focus({preventScroll:true});
   if (!reduce.matches) currentAnimation = content.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],{duration:240,easing:'cubic-bezier(.23,1,.32,1)'});
 }
-back.addEventListener('click', () => { answers.pop(); render(true); });
+back.addEventListener('click', () => changeQuestion(() => { answers.pop(); }));
 reduce.addEventListener('change', () => { if (reduce.matches) currentAnimation?.cancel(); });
 render();
 // All content stays visible when JavaScript or motion is unavailable.
@@ -78,6 +98,26 @@ if ('IntersectionObserver' in window) {
   },{threshold:.12});
   document.querySelectorAll('.reveal').forEach(element => observer.observe(element));
 }
-document.querySelectorAll('details').forEach(details => details.addEventListener('toggle', () => {
-  if (details.open && !reduce.matches) details.querySelector('.answer').animate([{opacity:0,transform:'translateY(-4px)'},{opacity:1,transform:'translateY(0)'}],{duration:200,easing:'cubic-bezier(.23,1,.32,1)'});
-}));
+
+const mascotVideo = document.querySelector('#venti-video');
+const compactLayout = matchMedia('(max-width: 720px)');
+let mascotVisible = true;
+function updateMascot() {
+  if (reduce.matches || compactLayout.matches || document.hidden || !mascotVisible) {
+    mascotVideo.pause();
+    if (reduce.matches) mascotVideo.currentTime = 0;
+  } else {
+    if (!mascotVideo.getAttribute('src')) mascotVideo.src = mascotVideo.dataset.src;
+    mascotVideo.play().catch(() => {});
+  }
+}
+reduce.addEventListener('change', updateMascot);
+compactLayout.addEventListener('change', updateMascot);
+document.addEventListener('visibilitychange', updateMascot);
+if ('IntersectionObserver' in window) {
+  new IntersectionObserver(entries => {
+    mascotVisible = entries[0].isIntersecting;
+    updateMascot();
+  },{threshold:.1}).observe(mascotVideo);
+}
+updateMascot();
