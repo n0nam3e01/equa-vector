@@ -102,3 +102,5 @@ header.hero-shell:before{display:none}
 @media(max-width:999px){.journey-track{grid-template-columns:1fr}.journey-card{padding:25px}.journey-layout{padding-block:38px}.journey-heading h2 br{display:none}.journey-heading h2{max-width:600px}.journey-heading .scroll-word{margin-right:8px}.journey-nav,.journey-progress{display:none}.journey-card h3{font-size:24px}.journey-art{max-width:460px;width:100%}}
 @media(max-width:720px){.journey{padding-bottom:40px}.journey-layout{padding-block:32px}.journey-heading h2{font-size:32px}.journey-heading>p:not(.label):not(.journey-hint){font-size:13px;margin-top:17px}.journey-heading{margin-bottom:23px}.journey-card{padding:23px;gap:16px}.journey-card h3{font-size:23px}.journey-card .badge{font-size:9px}.scroll-orbit{display:none}}
 @media(prefers-reduced-motion:reduce){.journey-nav li{transition:none}}
+
+.choice-icon img{display:block;width:22px;height:22px;object-fit:contain}

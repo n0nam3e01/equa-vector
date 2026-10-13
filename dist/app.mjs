@@ -10,7 +10,7 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 let answers = [];
 let currentAnimation;
 let changingQuestion = false;
-const symbols = ['⌘','✳','♡','↗'];
+const choiceIcons = ['laptop','palette','users','briefcase-business'];
 async function changeQuestion(change) {
   if (changingQuestion) return;
   changingQuestion = true;
@@ -73,7 +73,11 @@ function render(focus = false) {
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'choice';
       const icon = document.createElement('span');
-      icon.className = 'choice-icon'; icon.setAttribute('aria-hidden','true'); icon.textContent = symbols[index];
+      icon.className = 'choice-icon'; icon.setAttribute('aria-hidden','true');
+      const image = document.createElement('img');
+      image.src = `./assets/quiz-icons/${choiceIcons[index]}.png`;
+      image.alt = ''; image.width = 22; image.height = 22;
+      icon.append(image);
       const label = document.createElement('span'); label.textContent = answer;
       button.append(icon,label);
       button.addEventListener('click', () => changeQuestion(() => { answers.push(index); }));
