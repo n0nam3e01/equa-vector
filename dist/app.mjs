@@ -87,17 +87,8 @@ function render(focus = false) {
 back.addEventListener('click', () => changeQuestion(() => { answers.pop(); }));
 reduce.addEventListener('change', () => { if (reduce.matches) currentAnimation?.cancel(); });
 render();
-// All content stays visible when JavaScript or motion is unavailable.
-if ('IntersectionObserver' in window) {
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      if (!reduce.matches) entry.target.animate([{opacity:.45,transform:'translateY(16px)'},{opacity:1,transform:'translateY(0)'}],{duration:450,easing:'cubic-bezier(.23,1,.32,1)'});
-      observer.unobserve(entry.target);
-    });
-  },{threshold:.12});
-  document.querySelectorAll('.reveal').forEach(element => observer.observe(element));
-}
+// Scroll effects are optional; the quiz and static content work without them.
+import('./scroll.mjs').catch(error => console.warn('Scroll effects unavailable:',error));
 
 const mascotVideo = document.querySelector('#venti-video');
 const compactLayout = matchMedia('(max-width: 720px)');
